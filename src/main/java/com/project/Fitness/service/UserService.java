@@ -3,8 +3,10 @@ package com.project.Fitness.service;
 import com.project.Fitness.dto.RegisterRequest;
 import com.project.Fitness.dto.UserResponse;
 import com.project.Fitness.model.User;
+import com.project.Fitness.model.UserRole;
 import com.project.Fitness.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -16,13 +18,16 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserResponse register(RegisterRequest registerRequest) {
+        UserRole role = registerRequest.getRole() != null ? registerRequest.getRole() : UserRole.USER;
         User user = User.builder()
                 .email(registerRequest.getEmail())
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
-                .password(registerRequest.getPassword())
+                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .role(role)
                 .build();
 //        User user = new User(
 //                null,
@@ -43,7 +48,7 @@ public class UserService {
         return mapToResponse(savedUser);
     }
 
-    private UserResponse mapToResponse(User user) {
+    public UserResponse mapToResponse(User user) {
         UserResponse response = new UserResponse();
         response.setId(user.getId());
         response.setEmail(user.getEmail());
